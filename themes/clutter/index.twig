@@ -11,62 +11,51 @@
   <title>{% if meta.title %}{{ meta.title }} | {% endif %}{{ site_title }}</title>
   <link rel="stylesheet" href="{{ theme_url }}/styles/main.css" type="text/css" />
 
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700" rel="stylesheet">
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="{{ theme_url }}/scripts/jquery.min.js"></script>
 
   <!-- highlight.js -->
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <link rel="stylesheet" href="{{ theme_url }}/styles/default.min.css">
+  <script src="{{ theme_url }}/scripts/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
-
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      tex2jax: {
-        inlineMath: [ ['$','$'] ],
-        displayMath: [ ['$$','$$'] ],
-        skipTags: ["script","noscript","style","textarea"]
-      }
-    });
-    MathJax.Hub.Queue(function () {
-      $('.MathJax_Preview').parent().css('border','none').css('background','none').css('color','black');
-      $('.MathJax_Display').css('margin','-1em 0 -1em 0');
-    });
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mousetrap/1.6.1/mousetrap.min.js"></script>
-
-
+  <script src="{{ theme_url }}/scripts/mousetrap.min.js"></script>
 </head>
 <body>
-
 <aside class="main-nav">
 <nav>
-  
-  <!-- <p class="directory">{{ current_page.id |root}}</p> -->
-  <p class="directory"><a href="{{ base_url }}">root</a>/{{ current_page.id |root|directoryChain}}</p>
+  <p class="directory" id="navDirectoryChain">/<a href="{{ base_url }}/">root</a>/{{ current_page.id |root|directoryChain}}</p>
 
   {% set offset = 0 %}
   <ul>
-    {% for page in pages|sort_by("title")%}
-    {% if page.meta.shortcut %}
-      <span class="shortcut-data" style="display:none;" data-shortcut='{{ page.meta.shortcut }}'>{{ page.url }}</span>
-    {% endif %}
-    {%if current_page.id|isIndex %}
-      {% set offset = 1 %}
-    {% endif %}
+	{% for prio in ["1", "2", "3", "", "9"] -%}
+		{% for page in pages|filter(page => page.meta.priority == prio)|sort_by("title") -%}
+		
+		{% if page.meta.shortcut %}
+			<span class="shortcut-data" style="display:none;" data-shortcut='{{ page.meta.shortcut }}'>{{ page.url }}</span>
+		{% endif %}
+		{%if current_page.id|isIndex %}
+		  {% set offset = 1 %}
+		{% endif %}
 
-      {% if (is_front_page or (page.id starts with current_page.id |root)) 
-      and (current_page.id|level == page.id|level-offset) %}
-
-      <li class="menuitem {% if page.id == current_page.id %}active{% endif %}">
-        <a href="{{ page.url }}" data-shortcut="{{page.meta.shortcut}}">
-          {{ page.title }}
-        </a>
-      </li>
-
-      {% endif %}
+		{% if (is_front_page or (page.id starts with current_page.id |root)) and (current_page.id|level == page.id|level-offset) %}
+			<li class="menuitem {% if page.id == current_page.id %}active{% endif %} priority{{prio}}"
+			title="{{page.meta.description}}">
+			{% set isFolder = page.id|split('/')|length > current_page.id|split('/')|length %}
+				<a href="{{ isFolder ? page.url ~ '/' : page.url }}" data-shortcut="{{page.meta.shortcut}}">
+					{% if isFolder %}
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+						<path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
+					</svg>
+					{% else %}
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+						<path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
+						<path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+					</svg>
+					{% endif %}
+					{{ page.title }}
+				</a>
+			</li>
+		{% endif %}
+		{% endfor %}
     {% endfor %}
   </ul>
 </nav>
@@ -74,7 +63,7 @@
 
 <main class="main-content">
   <article class="article">
-    <h1 class='main-title'><span class="section-anchor"><a href="#">#</a></span>{{ current_page.title }}</h1>
+    <h1 class='main-title'><span class="section-anchor"><a href="#">#</a></span>{{ current_page.title }}</h1> <span>{{ current_page.description }}</span>
     {{ content }}
   </article>
 </main>
@@ -82,11 +71,8 @@
 <aside class="nav-contents">
 <nav>
   <ul class="table-contents">
-  <li><a href="#">{{ current_page.title }}</a></li>
-    
-
+	<li><a href="#">{{ current_page.title }}</a></li>
   </ul>
-  
 </nav>
 </aside>
 
@@ -102,21 +88,31 @@ $('.shortcut-data').each(function(){ //make shortcuts
   });
 });
 
+$('#navDirectoryChain a').each(function(){ //remove ? from links
+  this.href = this.href.replace("?", "");
+});
 
-$('.article h1, .article h2').not('.main-title').each(function() { //make anchors
+
+$('.article h1, .article h2, .article h3').not('.main-title').each(function() { //make anchors
   var rawName = $(this).text();
 
   var cleanedName = rawName.replace(/[\.\s]+/g, '-');
   $('<a id='+cleanedName+' />').insertBefore($(this));
   $(this).prepend($('<span class="section-anchor"><a href="#'+cleanedName+'">#</a></span>'));
 
-  var contentLine = $('<li><a href="#'+cleanedName+'">'+rawName+'</a>'+'</li>');
-  if($(this).is('h2')) contentLine.addClass('layer2');
-  $('.table-contents').append(contentLine);
+  if (rawName != "Inhaltsverzeichnis" && rawName != "Index"){
+    var contentLine = $('<li><a href="#'+cleanedName+'">'+rawName+'</a>'+'</li>');
+    if($(this).is('h2')) contentLine.addClass('layer2');
+    if($(this).is('h3')) contentLine.addClass('layer3');
+    $('.table-contents').append(contentLine);
+  }
 });
 
-
-
+$( ".priority" ).last().addClass( "last-priority-item" );
+$( ".priority1" ).last().addClass( "last-priority-item" );
+$( ".priority2" ).last().addClass( "last-priority-item" );
+$( ".priority3" ).last().addClass( "last-priority-item" );
+$( ".priority9" ).last().addClass( "last-priority-item" );
 
 </script>
 
